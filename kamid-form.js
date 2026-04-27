@@ -5,7 +5,7 @@
   var teL={'impresora-bn':'Impresora B/N','impresora-color':'Impresora Color','mf-bn':'Multifunción B/N','mf-color':'Multifunción Color','destructora':'Destructora de documentos','plotter':'Plotter de impresión'};
   var eqIds={'impresora-bn':'eq-impbn','impresora-color':'eq-impcol','mf-bn':'eq-mfbn','mf-color':'eq-mfcol','destructora':'eq-dest','plotter':'eq-plot'};
 
-  window.selOpt=function(field,val){
+  function selOpt(field,val){
     if(field==='tc'){
       ['opt-propio','opt-alquiler'].forEach(function(id){
         var el=document.getElementById(id);
@@ -23,9 +23,9 @@
       if(sel){sel.style.border='1.5px solid #cc0000';sel.style.background='rgba(204,0,0,0.04)';}
       fd.te=val; hide('e-te');
     }
-  };
+  }
 
-  window.togTag=function(elId,label){
+  function togTag(elId,label){
     var el=document.getElementById(elId);
     if(!el) return;
     var idx=fd.tags.indexOf(label);
@@ -42,9 +42,9 @@
       el.style.color='#555';
       el.style.fontWeight='normal';
     }
-  };
+  }
 
-  window.go=function(target){
+  function go(target){
     if(target>cur&&!vld(cur)) return;
     if(target===5) bldSum();
     document.getElementById('s'+cur).style.display='none';
@@ -52,7 +52,7 @@
     updProg(target); cur=target;
     var top=document.getElementById('kamid-prog');
     if(top) top.scrollIntoView({behavior:'smooth',block:'start'});
-  };
+  }
 
   function updProg(t){
     for(var i=1;i<=5;i++){
@@ -120,7 +120,7 @@
       'Descripción: '+(fd.desc||'Sin descripción adicional');
   }
 
-  window.doEmail=function(){
+  function doEmail(){
     var txt=document.getElementById('btn-mail-txt');
     if(txt) txt.textContent='Enviando...';
     fetch('https://api.web3forms.com/submit',{
@@ -144,15 +144,55 @@
     }).catch(function(){
       if(txt) txt.textContent='Error de conexión — intentá por WhatsApp';
     });
-  };
+  }
 
-  window.doWa=function(){
+  function doWa(){
     window.open('https://api.whatsapp.com/send/?phone=541133073970&text='+encodeURIComponent(buildMsg())+'&type=phone_number&app_absent=0','_blank');
-  };
+  }
 
-  function gv(id){var el=document.getElementById(id);return el?el.value.trim():'';}
-  function show(id){var el=document.getElementById(id);if(el)el.style.display='block';}
-  function hide(id){var el=document.getElementById(id);if(el)el.style.display='none';}
-  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function bind(id,fn){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener('click',fn);
+  }
+
+  function init(){
+    bind('opt-propio',   function(){ selOpt('tc','propio'); });
+    bind('opt-alquiler', function(){ selOpt('tc','alquiler'); });
+    bind('btn-go2',      function(){ go(2); });
+    bind('btn-back1',    function(){ go(1); });
+    bind('btn-go3',      function(){ go(3); });
+    bind('eq-impbn',     function(){ selOpt('te','impresora-bn'); });
+    bind('eq-impcol',    function(){ selOpt('te','impresora-color'); });
+    bind('eq-mfbn',      function(){ selOpt('te','mf-bn'); });
+    bind('eq-mfcol',     function(){ selOpt('te','mf-color'); });
+    bind('eq-dest',      function(){ selOpt('te','destructora'); });
+    bind('eq-plot',      function(){ selOpt('te','plotter'); });
+    bind('btn-back2',    function(){ go(2); });
+    bind('btn-go4',      function(){ go(4); });
+    bind('t-atasco',     function(){ togTag('t-atasco','Atascos de papel'); });
+    bind('t-calidad',    function(){ togTag('t-calidad','Mala calidad de impresión'); });
+    bind('t-noimp',      function(){ togTag('t-noimp','No imprime / no responde'); });
+    bind('t-lineas',     function(){ togTag('t-lineas','Líneas o manchas en copias'); });
+    bind('t-error',      function(){ togTag('t-error','Código de error en pantalla'); });
+    bind('t-toner',      function(){ togTag('t-toner','Problema con tóner o cartucho'); });
+    bind('t-escaner',    function(){ togTag('t-escaner','Problema con el escáner'); });
+    bind('t-red',        function(){ togTag('t-red','No aparece en la red / Wi-Fi'); });
+    bind('t-ruido',      function(){ togTag('t-ruido','Ruido inusual'); });
+    bind('t-apagado',    function(){ togTag('t-apagado','No enciende'); });
+    bind('t-alim',       function(){ togTag('t-alim','Problema con alimentación de hojas'); });
+    bind('t-fax',        function(){ togTag('t-fax','Problema con fax'); });
+    bind('btn-back3',    function(){ go(3); });
+    bind('btn-go5',      function(){ go(5); });
+    bind('btn-back4',    function(){ go(4); });
+    bind('btn-mail',     function(){ doEmail(); });
+    bind('btn-wa',       function(){ doWa(); });
+    bind('btn-wa-ok',    function(){ doWa(); });
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  } else {
+    init();
+  }
+
 })();
-
