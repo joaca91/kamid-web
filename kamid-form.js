@@ -197,7 +197,7 @@
       method:'POST',
       headers:{'Content-Type':'application/json','Accept':'application/json'},
       body:JSON.stringify({
-        access_key:'TU_ACCESS_KEY_AQUI',
+        access_key:'b8b91057-854d-4750-83cf-0998b034a266',
         subject:'Servicio Técnico - '+fd.emp+' ('+fd.nom+')',
         from_name:'Web KAMID - Formulario Servicio Técnico',
         replyto:fd.mail,
