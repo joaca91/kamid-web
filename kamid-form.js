@@ -1,4 +1,4 @@
-// KAMID Formulario Servicio Tecnico v3
+// KAMID Formulario Servicio Tecnico v5
 (function(){
 
   // --- HELPERS ---
@@ -23,7 +23,7 @@
   }
 
   // --- ESTADO ---
-  var fd={tc:'',te:'',tags:[],nom:'',emp:'',tel:'',mail:'',mod:'',ser:'',desc:''};
+  var fd={tc:'',te:'',tags:[],nom:'',emp:'',suc:'',sector:'',tel:'',mail:'',mod:'',ser:'',desc:'',tieneArchivos:false};
   var cur=1;
   var tcL={propio:'Equipo propio',alquiler:'Equipo en alquiler'};
   var teL={
@@ -86,6 +86,24 @@
     }
   }
 
+  // --- ARCHIVOS ADJUNTOS ---
+  function onFileChange(){
+    var input=document.getElementById('f-archivos');
+    if(!input) return;
+    fd.tieneArchivos = input.files && input.files.length > 0;
+    var info=document.getElementById('archivos-info');
+    var avisoWa=document.getElementById('aviso-wa-archivos');
+    if(fd.tieneArchivos){
+      var nombres=[];
+      for(var i=0;i<input.files.length;i++) nombres.push(input.files[i].name);
+      if(info){ info.textContent=nombres.length+' archivo(s): '+nombres.join(', '); info.style.color='#cc0000'; info.style.display='block'; }
+      if(avisoWa) avisoWa.style.display='block';
+    } else {
+      if(info){ info.textContent=''; info.style.display='none'; }
+      if(avisoWa) avisoWa.style.display='none';
+    }
+  }
+
   // --- NAVEGACION ---
   function go(target){
     if(target > cur && !vld(cur)) return;
@@ -130,7 +148,7 @@
       if(!fd.tc){ show('e-tc'); ok=false; }
     }
     if(s===2){
-      fd.nom=gv('f-nom'); fd.emp=gv('f-emp'); fd.tel=gv('f-tel'); fd.mail=gv('f-mail');
+      fd.nom=gv('f-nom'); fd.emp=gv('f-emp'); fd.suc=gv('f-suc'); fd.sec=gv('f-sec'); fd.tel=gv('f-tel'); fd.mail=gv('f-mail');
       if(!fd.nom){ show('e-nom'); ok=false; } else { hide('e-nom'); }
       if(!fd.emp){ show('e-emp'); ok=false; } else { hide('e-emp'); }
       if(!fd.tel){ show('e-tel'); ok=false; } else { hide('e-tel'); }
@@ -143,7 +161,8 @@
     }
     if(s===4){
       fd.desc=gv('f-desc');
-      if(fd.tags.length===0 && !fd.desc){ show('e-prob'); ok=false; } else { hide('e-prob'); }
+      // Descripción es obligatoria
+      if(!fd.desc){ show('e-prob'); ok=false; } else { hide('e-prob'); }
     }
     return ok;
   }
@@ -151,28 +170,53 @@
   // --- RESUMEN ---
   function bldSum(){
     fd.desc=gv('f-desc'); fd.ser=gv('f-ser');
+
     document.getElementById('r-tc').textContent = tcL[fd.tc] || '—';
-    document.getElementById('r-con').innerHTML = esc(fd.nom)+' — '+esc(fd.emp)+'<br>'+esc(fd.tel)+' · '+esc(fd.mail);
+
+    var conHTML = esc(fd.nom)+' — '+esc(fd.emp);
+    if(fd.suc) conHTML += ' · '+esc(fd.suc);
+    if(fd.sec) conHTML += ' · '+esc(fd.sec);
+    conHTML += '<br>'+esc(fd.tel)+' · '+esc(fd.mail);
+    document.getElementById('r-con').innerHTML = conHTML;
+
     var eq=(teL[fd.te]||'—')+' · Modelo: '+esc(fd.mod)+(fd.ser ? ' · N° serie: '+esc(fd.ser) : '');
     document.getElementById('r-eq').textContent=eq;
+
     var p=fd.tags.join(', ');
-    if(fd.desc){ if(p) p+='\n'; p+=fd.desc; }
+    if(p && fd.desc) p+='\n';
+    p+=fd.desc;
     document.getElementById('r-prob').textContent=p||'—';
+
+    // Mostrar u ocultar botón email según archivos
+    var btnMail=document.getElementById('btn-mail');
+    var avisoSoloWa=document.getElementById('aviso-solo-wa');
+    if(fd.tieneArchivos){
+      if(btnMail) btnMail.style.display='none';
+      if(avisoSoloWa) avisoSoloWa.style.display='block';
+    } else {
+      if(btnMail) btnMail.style.display='block';
+      if(avisoSoloWa) avisoSoloWa.style.display='none';
+    }
   }
 
   // --- MENSAJE ---
   function buildMsg(){
-    return 'SOLICITUD DE SERVICIO TÉCNICO - KAMID\n'+
+    var msg = 'SOLICITUD DE SERVICIO TÉCNICO - KAMID\n'+
       'Tipo de cliente: '+(tcL[fd.tc]||'—')+'\n'+
       'Nombre: '+fd.nom+'\n'+
-      'Empresa: '+fd.emp+'\n'+
+      'Empresa: '+fd.emp+'\n';
+    if(fd.suc) msg += 'Sucursal/Dirección: '+fd.suc+'\n';
+    if(fd.sec) msg += 'Sector/Piso: '+fd.sec+'\n';
+    msg +=
       'Teléfono: '+fd.tel+'\n'+
       'E-mail: '+fd.mail+'\n'+
       'Equipo: '+(teL[fd.te]||'—')+'\n'+
       'Modelo: '+fd.mod+'\n'+
       'N° serie: '+(fd.ser||'No informado')+'\n'+
       'Problemas: '+(fd.tags.join(', ')||'Ninguno seleccionado')+'\n'+
-      'Descripción: '+(fd.desc||'Sin descripción adicional');
+      'Descripción: '+fd.desc;
+    if(fd.tieneArchivos) msg += '\n\n⚠️ El cliente tiene archivos adjuntos para compartir.';
+    return msg;
   }
 
   // --- EMAIL ---
@@ -225,18 +269,18 @@
     bind('btn-back2',    function(){ go(2); });
     bind('btn-go4',      function(){ go(4); });
 
-    bind('t-atasco',     function(){ togTag('t-atasco',  'Atascos de papel'); });
-    bind('t-calidad',    function(){ togTag('t-calidad', 'Mala calidad de impresión'); });
-    bind('t-noimp',      function(){ togTag('t-noimp',   'No imprime / no responde'); });
-    bind('t-lineas',     function(){ togTag('t-lineas',  'Líneas o manchas en copias'); });
-    bind('t-error',      function(){ togTag('t-error',   'Código de error en pantalla'); });
-    bind('t-toner',      function(){ togTag('t-toner',   'Problema con tóner o cartucho'); });
-    bind('t-escaner',    function(){ togTag('t-escaner', 'Problema con el escáner'); });
-    bind('t-red',        function(){ togTag('t-red',     'No aparece en la red / Wi-Fi'); });
-    bind('t-ruido',      function(){ togTag('t-ruido',   'Ruido inusual'); });
-    bind('t-apagado',    function(){ togTag('t-apagado', 'No enciende'); });
-    bind('t-alim',       function(){ togTag('t-alim',    'Problema con alimentación de hojas'); });
-    bind('t-fax',        function(){ togTag('t-fax',     'Problema con fax'); });
+    bind('t-atasco',     function(){ togTag('t-atasco',   'Atascos de papel'); });
+    bind('t-calidad',    function(){ togTag('t-calidad',  'Mala calidad de impresión'); });
+    bind('t-calicop',  function(){ togTag('t-calicop','Mala calidad de copia'); });
+    bind('t-noimp',      function(){ togTag('t-noimp',    'No imprime / no responde'); });
+    bind('t-lineas',     function(){ togTag('t-lineas',   'Líneas o manchas en copias'); });
+    bind('t-error',      function(){ togTag('t-error',    'Código de error en pantalla'); });
+    bind('t-toner',      function(){ togTag('t-toner',    'Problema con tóner o cartucho'); });
+    bind('t-escaner',    function(){ togTag('t-escaner',  'Problema con el escáner'); });
+    bind('t-red',        function(){ togTag('t-red',      'No aparece en la red / Wi-Fi'); });
+    bind('t-ruido',      function(){ togTag('t-ruido',    'Ruido inusual'); });
+    bind('t-apagado',    function(){ togTag('t-apagado',  'No enciende'); });
+    bind('t-alim',       function(){ togTag('t-alim',     'Problema con alimentación de hojas'); });
     bind('btn-back3',    function(){ go(3); });
     bind('btn-go5',      function(){ go(5); });
 
@@ -244,6 +288,9 @@
     bind('btn-mail',     function(){ doEmail(); });
     bind('btn-wa',       function(){ doWa(); });
     bind('btn-wa-ok',    function(){ doWa(); });
+
+    var inputArchivos=document.getElementById('f-archivos');
+    if(inputArchivos) inputArchivos.addEventListener('change', onFileChange);
   }
 
   if(document.readyState==='loading'){
