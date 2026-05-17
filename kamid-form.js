@@ -1,31 +1,73 @@
+// KAMID Formulario Servicio Tecnico v3
 (function(){
+
+  // --- HELPERS ---
+  function gv(id){
+    var el=document.getElementById(id);
+    return el ? el.value.trim() : '';
+  }
+  function show(id){
+    var el=document.getElementById(id);
+    if(el) el.style.display='block';
+  }
+  function hide(id){
+    var el=document.getElementById(id);
+    if(el) el.style.display='none';
+  }
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function bind(id, fn){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener('click', fn);
+  }
+
+  // --- ESTADO ---
   var fd={tc:'',te:'',tags:[],nom:'',emp:'',tel:'',mail:'',mod:'',ser:'',desc:''};
   var cur=1;
   var tcL={propio:'Equipo propio',alquiler:'Equipo en alquiler'};
-  var teL={'impresora-bn':'Impresora B/N','impresora-color':'Impresora Color','mf-bn':'Multifunción B/N','mf-color':'Multifunción Color','destructora':'Destructora de documentos','plotter':'Plotter de impresión'};
-  var eqIds={'impresora-bn':'eq-impbn','impresora-color':'eq-impcol','mf-bn':'eq-mfbn','mf-color':'eq-mfcol','destructora':'eq-dest','plotter':'eq-plot'};
+  var teL={
+    'impresora-bn':'Impresora B/N',
+    'impresora-color':'Impresora Color',
+    'mf-bn':'Multifunción B/N',
+    'mf-color':'Multifunción Color',
+    'destructora':'Destructora de documentos',
+    'plotter':'Plotter de impresión'
+  };
+  var eqIds={
+    'impresora-bn':'eq-impbn',
+    'impresora-color':'eq-impcol',
+    'mf-bn':'eq-mfbn',
+    'mf-color':'eq-mfcol',
+    'destructora':'eq-dest',
+    'plotter':'eq-plot'
+  };
 
-  function selOpt(field,val){
+  // --- SELECCION DE OPCIONES ---
+  function selOpt(field, val){
     if(field==='tc'){
       ['opt-propio','opt-alquiler'].forEach(function(id){
         var el=document.getElementById(id);
-        if(el){el.style.border='1.5px solid #e0e0e0';el.style.background='#fff';}
+        if(el){ el.style.border='1.5px solid #e0e0e0'; el.style.background='#fff'; }
       });
-      var sel=document.getElementById(val==='propio'?'opt-propio':'opt-alquiler');
-      if(sel){sel.style.border='1.5px solid #cc0000';sel.style.background='rgba(204,0,0,0.04)';}
-      fd.tc=val; hide('e-tc');
+      var sel=document.getElementById(val==='propio' ? 'opt-propio' : 'opt-alquiler');
+      if(sel){ sel.style.border='1.5px solid #cc0000'; sel.style.background='rgba(204,0,0,0.04)'; }
+      fd.tc=val;
+      hide('e-tc');
     } else {
       Object.keys(eqIds).forEach(function(k){
         var el=document.getElementById(eqIds[k]);
-        if(el){el.style.border='1.5px solid #e0e0e0';el.style.background='#fff';}
+        if(el){ el.style.border='1.5px solid #e0e0e0'; el.style.background='#fff'; }
       });
       var sel=document.getElementById(eqIds[val]);
-      if(sel){sel.style.border='1.5px solid #cc0000';sel.style.background='rgba(204,0,0,0.04)';}
-      fd.te=val; hide('e-te');
+      if(sel){ sel.style.border='1.5px solid #cc0000'; sel.style.background='rgba(204,0,0,0.04)'; }
+      fd.te=val;
+      hide('e-te');
     }
   }
 
-  function togTag(elId,label){
+  // --- TAGS ---
+  function togTag(elId, label){
     var el=document.getElementById(elId);
     if(!el) return;
     var idx=fd.tags.indexOf(label);
@@ -44,82 +86,96 @@
     }
   }
 
+  // --- NAVEGACION ---
   function go(target){
-    if(target>cur&&!vld(cur)) return;
+    if(target > cur && !vld(cur)) return;
     if(target===5) bldSum();
     document.getElementById('s'+cur).style.display='none';
     document.getElementById('s'+target).style.display='block';
-    updProg(target); cur=target;
+    updProg(target);
+    cur=target;
     var top=document.getElementById('kamid-prog');
-    if(top) top.scrollIntoView({behavior:'smooth',block:'start'});
+    if(top) top.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
+  // --- PROGRESO ---
   function updProg(t){
-    for(var i=1;i<=5;i++){
+    for(var i=1; i<=5; i++){
       var d=document.getElementById('dot'+i);
       var l=document.getElementById('lbl'+i);
       var ln=document.getElementById('ln'+i);
       if(!d) continue;
-      if(i<t){
-        d.style.background='#000';d.style.borderColor='#000';d.style.color='#fff';d.style.fontSize='11px';
+      if(i < t){
+        d.style.background='#000'; d.style.borderColor='#000'; d.style.color='#fff'; d.style.fontSize='11px';
         d.textContent='✓';
-        if(l){l.style.color='#000';l.style.fontWeight='normal';}
+        if(l){ l.style.color='#000'; l.style.fontWeight='normal'; }
         if(ln) ln.style.background='#000';
       } else if(i===t){
-        d.style.background='#cc0000';d.style.borderColor='#cc0000';d.style.color='#fff';d.style.fontSize='13px';
+        d.style.background='#cc0000'; d.style.borderColor='#cc0000'; d.style.color='#fff'; d.style.fontSize='13px';
         d.textContent=i;
-        if(l){l.style.color='#cc0000';l.style.fontWeight='bold';}
+        if(l){ l.style.color='#cc0000'; l.style.fontWeight='bold'; }
       } else {
-        d.style.background='#f0f0f0';d.style.borderColor='#e0e0e0';d.style.color='#aaa';d.style.fontSize='13px';
+        d.style.background='#f0f0f0'; d.style.borderColor='#e0e0e0'; d.style.color='#aaa'; d.style.fontSize='13px';
         d.textContent=i;
-        if(l){l.style.color='#aaa';l.style.fontWeight='normal';}
+        if(l){ l.style.color='#aaa'; l.style.fontWeight='normal'; }
         if(ln) ln.style.background='#e0e0e0';
       }
     }
   }
 
+  // --- VALIDACION ---
   function vld(s){
     var ok=true;
-    if(s===1){if(!fd.tc){show('e-tc');ok=false;}}
+    if(s===1){
+      if(!fd.tc){ show('e-tc'); ok=false; }
+    }
     if(s===2){
-      fd.nom=gv('f-nom');fd.emp=gv('f-emp');fd.tel=gv('f-tel');fd.mail=gv('f-mail');
-      if(!fd.nom){show('e-nom');ok=false;}else hide('e-nom');
-      if(!fd.emp){show('e-emp');ok=false;}else hide('e-emp');
-      if(!fd.tel){show('e-tel');ok=false;}else hide('e-tel');
-      if(!fd.mail||fd.mail.indexOf('@')===-1){show('e-mail');ok=false;}else hide('e-mail');
+      fd.nom=gv('f-nom'); fd.emp=gv('f-emp'); fd.tel=gv('f-tel'); fd.mail=gv('f-mail');
+      if(!fd.nom){ show('e-nom'); ok=false; } else { hide('e-nom'); }
+      if(!fd.emp){ show('e-emp'); ok=false; } else { hide('e-emp'); }
+      if(!fd.tel){ show('e-tel'); ok=false; } else { hide('e-tel'); }
+      if(!fd.mail || fd.mail.indexOf('@')===-1){ show('e-mail'); ok=false; } else { hide('e-mail'); }
     }
     if(s===3){
-      fd.mod=gv('f-mod');fd.ser=gv('f-ser');
-      if(!fd.te){show('e-te');ok=false;}else hide('e-te');
-      if(!fd.mod){show('e-mod');ok=false;}else hide('e-mod');
+      fd.mod=gv('f-mod'); fd.ser=gv('f-ser');
+      if(!fd.te){ show('e-te'); ok=false; } else { hide('e-te'); }
+      if(!fd.mod){ show('e-mod'); ok=false; } else { hide('e-mod'); }
     }
     if(s===4){
       fd.desc=gv('f-desc');
-      if(fd.tags.length===0&&!fd.desc){show('e-prob');ok=false;}else hide('e-prob');
+      if(fd.tags.length===0 && !fd.desc){ show('e-prob'); ok=false; } else { hide('e-prob'); }
     }
     return ok;
   }
 
+  // --- RESUMEN ---
   function bldSum(){
-    fd.desc=gv('f-desc');fd.ser=gv('f-ser');
-    document.getElementById('r-tc').textContent=tcL[fd.tc]||'—';
-    document.getElementById('r-con').innerHTML=esc(fd.nom)+' — '+esc(fd.emp)+'<br>'+esc(fd.tel)+' · '+esc(fd.mail);
-    var eq=(teL[fd.te]||'—')+' · Modelo: '+esc(fd.mod)+(fd.ser?' · N° serie: '+esc(fd.ser):'');
+    fd.desc=gv('f-desc'); fd.ser=gv('f-ser');
+    document.getElementById('r-tc').textContent = tcL[fd.tc] || '—';
+    document.getElementById('r-con').innerHTML = esc(fd.nom)+' — '+esc(fd.emp)+'<br>'+esc(fd.tel)+' · '+esc(fd.mail);
+    var eq=(teL[fd.te]||'—')+' · Modelo: '+esc(fd.mod)+(fd.ser ? ' · N° serie: '+esc(fd.ser) : '');
     document.getElementById('r-eq').textContent=eq;
     var p=fd.tags.join(', ');
-    if(fd.desc){if(p)p+='\n';p+=fd.desc;}
+    if(fd.desc){ if(p) p+='\n'; p+=fd.desc; }
     document.getElementById('r-prob').textContent=p||'—';
   }
 
+  // --- MENSAJE ---
   function buildMsg(){
     return 'SOLICITUD DE SERVICIO TÉCNICO - KAMID\n'+
       'Tipo de cliente: '+(tcL[fd.tc]||'—')+'\n'+
-      'Nombre: '+fd.nom+'\nEmpresa: '+fd.emp+'\nTeléfono: '+fd.tel+'\nE-mail: '+fd.mail+'\n'+
-      'Equipo: '+(teL[fd.te]||'—')+'\nModelo: '+fd.mod+'\nN° serie: '+(fd.ser||'No informado')+'\n'+
+      'Nombre: '+fd.nom+'\n'+
+      'Empresa: '+fd.emp+'\n'+
+      'Teléfono: '+fd.tel+'\n'+
+      'E-mail: '+fd.mail+'\n'+
+      'Equipo: '+(teL[fd.te]||'—')+'\n'+
+      'Modelo: '+fd.mod+'\n'+
+      'N° serie: '+(fd.ser||'No informado')+'\n'+
       'Problemas: '+(fd.tags.join(', ')||'Ninguno seleccionado')+'\n'+
       'Descripción: '+(fd.desc||'Sin descripción adicional');
   }
 
+  // --- EMAIL ---
   function doEmail(){
     var txt=document.getElementById('btn-mail-txt');
     if(txt) txt.textContent='Enviando...';
@@ -133,7 +189,7 @@
         replyto:fd.mail,
         message:buildMsg()
       })
-    }).then(function(r){return r.json();}).then(function(d){
+    }).then(function(r){ return r.json(); }).then(function(d){
       if(d.success){
         document.getElementById('kamid-prog').style.display='none';
         document.getElementById('s5').style.display='none';
@@ -146,21 +202,20 @@
     });
   }
 
+  // --- WHATSAPP ---
   function doWa(){
     window.open('https://api.whatsapp.com/send/?phone=541133073970&text='+encodeURIComponent(buildMsg())+'&type=phone_number&app_absent=0','_blank');
   }
 
-  function bind(id,fn){
-    var el=document.getElementById(id);
-    if(el) el.addEventListener('click',fn);
-  }
-
+  // --- INICIALIZAR EVENTOS ---
   function init(){
     bind('opt-propio',   function(){ selOpt('tc','propio'); });
     bind('opt-alquiler', function(){ selOpt('tc','alquiler'); });
     bind('btn-go2',      function(){ go(2); });
+
     bind('btn-back1',    function(){ go(1); });
     bind('btn-go3',      function(){ go(3); });
+
     bind('eq-impbn',     function(){ selOpt('te','impresora-bn'); });
     bind('eq-impcol',    function(){ selOpt('te','impresora-color'); });
     bind('eq-mfbn',      function(){ selOpt('te','mf-bn'); });
@@ -169,20 +224,22 @@
     bind('eq-plot',      function(){ selOpt('te','plotter'); });
     bind('btn-back2',    function(){ go(2); });
     bind('btn-go4',      function(){ go(4); });
-    bind('t-atasco',     function(){ togTag('t-atasco','Atascos de papel'); });
-    bind('t-calidad',    function(){ togTag('t-calidad','Mala calidad de impresión'); });
-    bind('t-noimp',      function(){ togTag('t-noimp','No imprime / no responde'); });
-    bind('t-lineas',     function(){ togTag('t-lineas','Líneas o manchas en copias'); });
-    bind('t-error',      function(){ togTag('t-error','Código de error en pantalla'); });
-    bind('t-toner',      function(){ togTag('t-toner','Problema con tóner o cartucho'); });
-    bind('t-escaner',    function(){ togTag('t-escaner','Problema con el escáner'); });
-    bind('t-red',        function(){ togTag('t-red','No aparece en la red / Wi-Fi'); });
-    bind('t-ruido',      function(){ togTag('t-ruido','Ruido inusual'); });
-    bind('t-apagado',    function(){ togTag('t-apagado','No enciende'); });
-    bind('t-alim',       function(){ togTag('t-alim','Problema con alimentación de hojas'); });
-    bind('t-fax',        function(){ togTag('t-fax','Problema con fax'); });
+
+    bind('t-atasco',     function(){ togTag('t-atasco',  'Atascos de papel'); });
+    bind('t-calidad',    function(){ togTag('t-calidad', 'Mala calidad de impresión'); });
+    bind('t-noimp',      function(){ togTag('t-noimp',   'No imprime / no responde'); });
+    bind('t-lineas',     function(){ togTag('t-lineas',  'Líneas o manchas en copias'); });
+    bind('t-error',      function(){ togTag('t-error',   'Código de error en pantalla'); });
+    bind('t-toner',      function(){ togTag('t-toner',   'Problema con tóner o cartucho'); });
+    bind('t-escaner',    function(){ togTag('t-escaner', 'Problema con el escáner'); });
+    bind('t-red',        function(){ togTag('t-red',     'No aparece en la red / Wi-Fi'); });
+    bind('t-ruido',      function(){ togTag('t-ruido',   'Ruido inusual'); });
+    bind('t-apagado',    function(){ togTag('t-apagado', 'No enciende'); });
+    bind('t-alim',       function(){ togTag('t-alim',    'Problema con alimentación de hojas'); });
+    bind('t-fax',        function(){ togTag('t-fax',     'Problema con fax'); });
     bind('btn-back3',    function(){ go(3); });
     bind('btn-go5',      function(){ go(5); });
+
     bind('btn-back4',    function(){ go(4); });
     bind('btn-mail',     function(){ doEmail(); });
     bind('btn-wa',       function(){ doWa(); });
@@ -190,7 +247,7 @@
   }
 
   if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',init);
+    document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
