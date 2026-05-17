@@ -23,7 +23,7 @@
   }
 
   // --- ESTADO ---
-  var fd={tc:'',te:'',tags:[],nom:'',emp:'',suc:'',sector:'',tel:'',mail:'',mod:'',ser:'',desc:'',tieneArchivos:false};
+  var fd={tc:'',te:'',tags:[],nom:'',emp:'',suc:'',sec:'',tel:'',mail:'',mod:'',ser:'',desc:''};
   var cur=1;
   var tcL={propio:'Equipo propio',alquiler:'Equipo en alquiler'};
   var teL={
@@ -83,24 +83,6 @@
       el.style.background='#fff';
       el.style.color='#555';
       el.style.fontWeight='normal';
-    }
-  }
-
-  // --- ARCHIVOS ADJUNTOS ---
-  function onFileChange(){
-    var input=document.getElementById('f-archivos');
-    if(!input) return;
-    fd.tieneArchivos = input.files && input.files.length > 0;
-    var info=document.getElementById('archivos-info');
-    var avisoWa=document.getElementById('aviso-wa-archivos');
-    if(fd.tieneArchivos){
-      var nombres=[];
-      for(var i=0;i<input.files.length;i++) nombres.push(input.files[i].name);
-      if(info){ info.textContent=nombres.length+' archivo(s): '+nombres.join(', '); info.style.color='#cc0000'; info.style.display='block'; }
-      if(avisoWa) avisoWa.style.display='block';
-    } else {
-      if(info){ info.textContent=''; info.style.display='none'; }
-      if(avisoWa) avisoWa.style.display='none';
     }
   }
 
@@ -186,17 +168,6 @@
     if(p && fd.desc) p+='\n';
     p+=fd.desc;
     document.getElementById('r-prob').textContent=p||'—';
-
-    // Mostrar u ocultar botón email según archivos
-    var btnMail=document.getElementById('btn-mail');
-    var avisoSoloWa=document.getElementById('aviso-solo-wa');
-    if(fd.tieneArchivos){
-      if(btnMail) btnMail.style.display='none';
-      if(avisoSoloWa) avisoSoloWa.style.display='block';
-    } else {
-      if(btnMail) btnMail.style.display='block';
-      if(avisoSoloWa) avisoSoloWa.style.display='none';
-    }
   }
 
   // --- MENSAJE ---
@@ -215,7 +186,6 @@
       'N° serie: '+(fd.ser||'No informado')+'\n'+
       'Problemas: '+(fd.tags.join(', ')||'Ninguno seleccionado')+'\n'+
       'Descripción: '+fd.desc;
-    if(fd.tieneArchivos) msg += '\n\n⚠️ El cliente tiene archivos adjuntos para compartir.';
     return msg;
   }
 
@@ -288,9 +258,6 @@
     bind('btn-mail',     function(){ doEmail(); });
     bind('btn-wa',       function(){ doWa(); });
     bind('btn-wa-ok',    function(){ doWa(); });
-
-    var inputArchivos=document.getElementById('f-archivos');
-    if(inputArchivos) inputArchivos.addEventListener('change', onFileChange);
   }
 
   if(document.readyState==='loading'){
