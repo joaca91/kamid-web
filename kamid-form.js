@@ -1,7 +1,6 @@
 // KAMID Formulario Servicio Tecnico v6 - pagina unificada (3 pasos)
 (function(){
 
-  // --- HELPERS ---
   function gv(id){
     var el=document.getElementById(id);
     return el ? el.value.trim() : '';
@@ -22,7 +21,6 @@
     if(el) el.addEventListener('click', fn);
   }
 
-  // --- ESTADO ---
   var fd={te:'',tags:[],nom:'',emp:'',suc:'',sec:'',tel:'',mail:'',mod:'',ser:'',desc:''};
   var cur=1;
   var teL={
@@ -42,7 +40,6 @@
     'plotter':'eq-plot'
   };
 
-  // --- SELECCION TIPO EQUIPO ---
   function selEq(val){
     Object.keys(eqIds).forEach(function(k){
       var el=document.getElementById(eqIds[k]);
@@ -54,7 +51,6 @@
     hide('e-te');
   }
 
-  // --- TAGS SINTOMAS ---
   function togTag(elId, label){
     var el=document.getElementById(elId);
     if(!el) return;
@@ -74,7 +70,6 @@
     }
   }
 
-  // --- NAVEGACION ---
   function go(target){
     if(target > cur && !vld(cur)) return;
     if(target===4) bldSum();
@@ -86,7 +81,6 @@
     if(top) top.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
-  // --- PROGRESO ---
   function updProg(t){
     var labels=['Contacto','Equipo','Problema','Enviar'];
     for(var i=1; i<=4; i++){
@@ -113,7 +107,6 @@
     }
   }
 
-  // --- VALIDACION ---
   function vld(s){
     var ok=true;
     if(s===1){
@@ -135,26 +128,21 @@
     return ok;
   }
 
-  // --- RESUMEN ---
   function bldSum(){
     fd.desc=gv('f-desc'); fd.ser=gv('f-ser');
-
     var conHTML=esc(fd.nom)+' — '+esc(fd.emp);
     if(fd.suc) conHTML+=' · '+esc(fd.suc);
     if(fd.sec) conHTML+=' · '+esc(fd.sec);
     conHTML+='<br>'+esc(fd.tel)+' · '+esc(fd.mail);
     document.getElementById('r-con').innerHTML=conHTML;
-
     var eq=(teL[fd.te]||'—')+' · Modelo: '+esc(fd.mod)+(fd.ser?' · N serie: '+esc(fd.ser):'');
     document.getElementById('r-eq').textContent=eq;
-
     var p=fd.tags.join(', ');
     if(p && fd.desc) p+='\n';
     p+=fd.desc;
     document.getElementById('r-prob').textContent=p||'—';
   }
 
-  // --- MENSAJE (mismo formato que v5 que funcionaba) ---
   function buildMsg(){
     var msg='SOLICITUD DE SERVICIO TECNICO - KAMID\n'+
       'Nombre: '+fd.nom+'\n'+
@@ -172,7 +160,6 @@
     return msg;
   }
 
-  // --- EMAIL (mismo metodo que v5 que funcionaba) ---
   function doEmail(){
     var txt=document.getElementById('btn-mail-txt');
     if(txt) txt.textContent='Enviando...';
@@ -188,7 +175,6 @@
       })
     }).then(function(r){ return r.json(); }).then(function(d){
       if(d.success){
-        document.getElementById('kamid-prog') && (document.getElementById('kamid-prog').style.display='none');
         hide('s4');
         document.getElementById('kamid-ok').style.display='block';
         var top=document.getElementById('kamid-form');
@@ -201,12 +187,10 @@
     });
   }
 
-  // --- WHATSAPP ---
   function doWa(){
     window.open('https://api.whatsapp.com/send/?phone=541133073970&text='+encodeURIComponent(buildMsg())+'&type=phone_number&app_absent=0','_blank');
   }
 
-  // --- INICIALIZAR ---
   function init(){
     bind('btn-go2',   function(){ go(2); });
     bind('btn-back1', function(){ go(1); });
@@ -214,14 +198,12 @@
     bind('btn-back2', function(){ go(2); });
     bind('btn-go4',   function(){ go(4); });
     bind('btn-back3', function(){ go(3); });
-
     bind('eq-impbn',  function(){ selEq('impresora-bn'); });
     bind('eq-impcol', function(){ selEq('impresora-color'); });
     bind('eq-mfbn',   function(){ selEq('mf-bn'); });
     bind('eq-mfcol',  function(){ selEq('mf-color'); });
     bind('eq-dest',   function(){ selEq('destructora'); });
     bind('eq-plot',   function(){ selEq('plotter'); });
-
     bind('t-atasco',  function(){ togTag('t-atasco',  'Atascos de papel'); });
     bind('t-calidad', function(){ togTag('t-calidad', 'Mala calidad de impresion'); });
     bind('t-calicop', function(){ togTag('t-calicop', 'Mala calidad de copia'); });
@@ -234,11 +216,9 @@
     bind('t-ruido',   function(){ togTag('t-ruido',   'Ruido inusual'); });
     bind('t-apagado', function(){ togTag('t-apagado', 'No enciende'); });
     bind('t-alim',    function(){ togTag('t-alim',    'Problema con alimentacion de hojas'); });
-
     bind('btn-mail',  function(){ doEmail(); });
     bind('btn-wa',    function(){ doWa(); });
     bind('btn-wa-ok', function(){ doWa(); });
-
     updProg(1);
   }
 
